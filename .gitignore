@@ -73,3 +73,6 @@ azureauth.json
 
 # Ansible runtime inventory (host IPs)
 runner-infra/ansible/inventory.ini
+
+# Runner tfvars (SSH key + admin IP) are host-specific
+runner-infra/terraform/terraform.tfvars
