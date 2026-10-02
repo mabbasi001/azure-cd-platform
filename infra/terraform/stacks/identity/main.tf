@@ -44,3 +44,17 @@ resource "azurerm_role_assignment" "ci_acr_push" {
   role_definition_name = "AcrPush"
   principal_id         = azuread_service_principal.ci.object_id
 }
+
+# Needed by the scheduled backup workflow: read the DB secret from Key Vault
+# and write dumps to the backup storage account.
+resource "azurerm_role_assignment" "ci_kv_secrets_user" {
+  scope                = local.subscription_scope
+  role_definition_name = "Key Vault Secrets User"
+  principal_id         = azuread_service_principal.ci.object_id
+}
+
+resource "azurerm_role_assignment" "ci_blob_contributor" {
+  scope                = local.subscription_scope
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = azuread_service_principal.ci.object_id
+}

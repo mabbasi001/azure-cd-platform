@@ -1,0 +1,47 @@
+name: backup
+
+on:
+  schedule:
+    - cron: "0 2 * * *" # daily at 02:00 UTC
+  workflow_dispatch:
+    inputs:
+      verify:
+        description: Also run restore verification
+        type: boolean
+        default: false
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  KEY_VAULT_NAME: kv-rw-shared-e8f-neu
+  BACKUP_STORAGE_ACCOUNT: strwdevbake8fneu
+  BACKUP_CONTAINER: pg-backups
+
+jobs:
+  backup:
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Daily database backup
+        run: ./scripts/backup/pg_backup.sh
+
+  verify:
+    needs: backup
+    if: github.event_name == 'schedule' || inputs.verify
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Restore verification
+        run: ./scripts/backup/pg_restore_verify.sh

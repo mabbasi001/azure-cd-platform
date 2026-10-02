@@ -21,3 +21,11 @@ output "frontend_app_name" {
 output "postgres_fqdn" {
   value = module.postgres.fqdn
 }
+
+output "backup_storage_account" {
+  value = azurerm_storage_account.backup.name
+}
+
+output "backup_container" {
+  value = azurerm_storage_container.backup.name
+}
