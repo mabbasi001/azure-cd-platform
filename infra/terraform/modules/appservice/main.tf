@@ -28,6 +28,7 @@ resource "azurerm_linux_web_app" "this" {
   site_config {
     always_on                               = true
     health_check_path                       = var.health_check_path
+    health_check_eviction_time_in_min       = 5
     container_registry_use_managed_identity = true
     vnet_route_all_enabled                  = true
 
