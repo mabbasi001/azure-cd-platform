@@ -9,13 +9,36 @@ resource "azurerm_storage_account" "backup" {
   min_tls_version                 = "TLS1_2"
   allow_nested_items_to_be_public = false
   tags                            = local.tags
+
+  # Locked down: reachable via the private endpoint from the VNet and via
+  # explicitly allow-listed IPs (CI egress added at run time).
+  network_rules {
+    default_action = "Deny"
+    bypass         = ["AzureServices"]
+    ip_rules       = var.admin_ip_rules
+  }
+
+  # CI adds/removes its ephemeral egress IP imperatively per run.
+  lifecycle {
+    ignore_changes = [network_rules[0].ip_rules]
+  }
 }
 
-resource "azurerm_storage_container" "backup" {
-  name                  = "pg-backups"
-  storage_account_name  = azurerm_storage_account.backup.name
-  container_access_type = "private"
+module "backup_pe" {
+  source                         = "../../modules/private_endpoint"
+  name                           = "pe-${local.prefix}-bak"
+  location                       = var.location
+  resource_group_name            = azurerm_resource_group.dev.name
+  subnet_id                      = local.shared.subnet_ids["snet-rw-shared-pe"]
+  private_connection_resource_id = azurerm_storage_account.backup.id
+  subresource_names              = ["blob"]
+  private_dns_zone_name          = "privatelink.blob.core.windows.net"
+  vnet_id                        = local.shared.vnet_id
+  tags                           = local.tags
 }
+
+# The container is created by the backup workflow after it allow-lists its
+# egress IP, to avoid a data-plane create against the default-deny account.
 
 resource "azurerm_storage_management_policy" "backup" {
   storage_account_id = azurerm_storage_account.backup.id

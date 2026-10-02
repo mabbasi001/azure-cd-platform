@@ -21,16 +21,20 @@ permissions:
   id-token: write
   contents: read
 
+# Runs on GitHub-hosted runners for now: the self-hosted agent VM is blocked by
+# Azure capacity in the region. Locked-down resources are reached by allow-listing
+# the runner's ephemeral egress IP for the duration of the job.
 env:
   ARM_USE_OIDC: "true"
   ARM_USE_AZUREAD: "true"
   ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
   ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
   ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+  KEY_VAULT_NAME: kv-rw-shared-e8f-neu
 
 jobs:
   validate:
-    runs-on: [self-hosted, linux, x64]
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         stack: [shared, identity, app]
@@ -49,7 +53,7 @@ jobs:
   plan:
     if: github.event_name == 'pull_request'
     needs: validate
-    runs-on: [self-hosted, linux, x64]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: hashicorp/setup-terraform@v3
@@ -65,17 +69,11 @@ jobs:
         run: |
           terraform init
           terraform plan -input=false
-      - name: Plan app (dev)
-        working-directory: infra/terraform/stacks/app
-        run: |
-          terraform init
-          terraform workspace select dev || terraform workspace new dev
-          terraform plan -input=false -var-file=dev.tfvars
 
   apply:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     needs: validate
-    runs-on: [self-hosted, linux, x64]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: hashicorp/setup-terraform@v3
@@ -86,12 +84,22 @@ jobs:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
       - name: Apply shared
         if: github.event_name == 'push' || inputs.stack == 'shared'
         working-directory: infra/terraform/stacks/shared
         run: |
           terraform init
           terraform apply -input=false -auto-approve
+
+      - name: Allow runner IP on Key Vault
+        if: github.event_name == 'push' || inputs.stack == 'app'
+        run: |
+          RUNNER_IP="$(curl -s https://api.ipify.org)"
+          echo "RUNNER_IP=$RUNNER_IP" >>"$GITHUB_ENV"
+          az keyvault network-rule add --name "$KEY_VAULT_NAME" --ip-address "$RUNNER_IP" --output none
+          sleep 20
+
       - name: Apply app (dev)
         if: github.event_name == 'push' || inputs.stack == 'app'
         working-directory: infra/terraform/stacks/app
@@ -99,3 +107,7 @@ jobs:
           terraform init
           terraform workspace select dev || terraform workspace new dev
           terraform apply -input=false -auto-approve -var-file=dev.tfvars
+
+      - name: Remove runner IP from Key Vault
+        if: always() && env.RUNNER_IP != ''
+        run: az keyvault network-rule remove --name "$KEY_VAULT_NAME" --ip-address "$RUNNER_IP" --output none

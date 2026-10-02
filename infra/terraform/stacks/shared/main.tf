@@ -78,6 +78,25 @@ module "keyvault" {
   tenant_id                  = data.azurerm_client_config.current.tenant_id
   log_analytics_workspace_id = module.monitoring.id
   tags                       = local.tags
+
+  # Locked down: default-deny public, reachable via the private endpoint from
+  # the VNet and via explicitly allow-listed IPs (CI egress added at run time).
+  public_network_access_enabled = true
+  network_default_action        = "Deny"
+  allowed_ip_rules              = var.admin_ip_rules
+}
+
+module "keyvault_pe" {
+  source                         = "../../modules/private_endpoint"
+  name                           = "pe-${local.prefix}-kv"
+  location                       = var.location
+  resource_group_name            = azurerm_resource_group.shared.name
+  subnet_id                      = module.network.subnet_ids["snet-${local.prefix}-pe"]
+  private_connection_resource_id = module.keyvault.id
+  subresource_names              = ["vault"]
+  private_dns_zone_name          = "privatelink.vaultcore.azure.net"
+  vnet_id                        = module.network.vnet_id
+  tags                           = local.tags
 }
 
 resource "azurerm_user_assigned_identity" "runner" {

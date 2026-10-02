@@ -27,3 +27,9 @@ variable "region_code" {
   type    = string
   default = "neu"
 }
+
+variable "admin_ip_rules" {
+  description = "Public IPs/CIDRs allowed through the Key Vault firewall (admin/bootstrap access)."
+  type        = list(string)
+  default     = []
+}

@@ -25,7 +25,7 @@ env:
 
 jobs:
   test:
-    runs-on: [self-hosted, linux, x64]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Build and start the stack
@@ -52,7 +52,7 @@ jobs:
 
   build-push:
     needs: test
-    runs-on: [self-hosted, linux, x64]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: azure/login@v2
@@ -77,7 +77,7 @@ jobs:
 
   deploy:
     needs: build-push
-    runs-on: [self-hosted, linux, x64]
+    runs-on: ubuntu-latest
     steps:
       - uses: azure/login@v2
         with:
@@ -105,7 +105,7 @@ jobs:
 
   performance:
     needs: deploy
-    runs-on: [self-hosted, linux, x64]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Run k6 performance gate
