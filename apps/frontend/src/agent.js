@@ -3,7 +3,8 @@ import _superagent from 'superagent';
 
 const superagent = superagentPromise(_superagent, global.Promise);
 
-const API_ROOT = 'https://conduit.productionready.io/api';
+const runtimeConfig = (typeof window !== 'undefined' && window._env_) || {};
+const API_ROOT = runtimeConfig.API_URL || process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 const encode = encodeURIComponent;
 const responseBody = res => res.body;
