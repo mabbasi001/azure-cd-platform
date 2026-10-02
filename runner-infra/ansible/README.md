@@ -1,6 +1,6 @@
 # Ansible — self-hosted runner
 
-Configures the Azure VM (provisioned by `infra/terraform/envs/runner`) as a GitHub Actions
+Configures the Azure VM (provisioned by `infra/terraform/stacks/runner`) as a GitHub Actions
 self-hosted runner: installs Docker (with buildx + compose), registers the runner against the
 repository, installs it as a systemd service, and enables unattended security upgrades.
 
@@ -9,7 +9,7 @@ repository, installs it as a systemd service, and enables unattended security up
 1. Provision the VM with Terraform and note its public IP:
 
    ```
-   cd ../terraform/envs/runner && terraform output runner_public_ip
+   cd ../terraform/stacks/runner && terraform output runner_public_ip
    ```
 
 2. Create the inventory from the example and set the host IP:

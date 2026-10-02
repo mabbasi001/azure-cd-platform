@@ -13,7 +13,7 @@ ansible/     configures the VM: Docker (buildx + compose), registers the GitHub
 
 ## Provision
 
-Prerequisite: the `shared` stack (in `infra/terraform/envs/shared`) is applied, since this reads
+Prerequisite: the `shared` stack (in `infra/terraform/stacks/shared`) is applied, since this reads
 its VNet subnet and runner identity from remote state.
 
 ```
