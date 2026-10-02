@@ -17,11 +17,16 @@ envs/
   identity/     GitHub OIDC app registration + federated creds + RBAC (bootstrap)
   shared/       cross-environment infra: RG, Log Analytics, ACR, Key Vault,
                 VNet, runner identity, RBAC
-  dev/          application tier: Postgres, App Insights, web apps, KV secrets
+  app/          application tier (Postgres, App Insights, web apps, KV secrets);
+                one stack, per-environment via Terraform workspaces + *.tfvars
   runner/       the CI runner VM (consumes shared outputs)
 ```
 
-Apply order: `identity` and `shared` first (any order), then `dev` and `runner`
+`shared`, `identity` and `runner` are distinct one-off stacks. The `app` stack is
+environment-agnostic: `dev`/`staging`/`prod` are **workspaces** with their own
+`*.tfvars`, not copied folders (see `envs/app/README.md`).
+
+Apply order: `identity` and `shared` first (any order), then `app` and `runner`
 (both read `shared` remote state).
 
 ## State
