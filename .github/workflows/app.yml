@@ -24,7 +24,37 @@ env:
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
+  # Decide what to build: a push touches only what changed; a manual run rebuilds
+  # both (the escape hatch for base-image bumps).
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.decide.outputs.backend }}
+      frontend: ${{ steps.decide.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'apps/backend/**'
+              - 'apps/docker-compose.yml'
+            frontend:
+              - 'apps/frontend/**'
+              - 'apps/docker-compose.yml'
+      - id: decide
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "backend=true" >>"$GITHUB_OUTPUT"
+            echo "frontend=true" >>"$GITHUB_OUTPUT"
+          else
+            echo "backend=${{ steps.filter.outputs.backend }}" >>"$GITHUB_OUTPUT"
+            echo "frontend=${{ steps.filter.outputs.frontend }}" >>"$GITHUB_OUTPUT"
+          fi
+
   test:
+    needs: changes
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -50,8 +80,9 @@ jobs:
         working-directory: apps
         run: docker compose down -v
 
-  build-push:
-    needs: test
+  build-push-backend:
+    needs: [test, changes]
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -68,6 +99,20 @@ jobs:
             -t "$ACR_LOGIN_SERVER/$BACKEND_IMAGE:$IMAGE_TAG" \
             -t "$ACR_LOGIN_SERVER/$BACKEND_IMAGE:latest" \
             --push apps/backend
+
+  build-push-frontend:
+    needs: [test, changes]
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Log in to ACR
+        run: az acr login --name "$ACR_NAME"
       - name: Build and push frontend
         run: |
           docker buildx build --platform linux/amd64 \
@@ -75,8 +120,8 @@ jobs:
             -t "$ACR_LOGIN_SERVER/$FRONTEND_IMAGE:latest" \
             --push apps/frontend
 
-  deploy:
-    needs: build-push
+  deploy-backend:
+    needs: build-push-backend
     runs-on: ubuntu-latest
     steps:
       - uses: azure/login@v2
@@ -84,16 +129,12 @@ jobs:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-      - name: Point web apps at the new image
+      - name: Point the API app at the new image
         run: |
           az webapp config container set --name "$BACKEND_APP" --resource-group "$RESOURCE_GROUP" \
             --container-image-name "$ACR_LOGIN_SERVER/$BACKEND_IMAGE:$IMAGE_TAG"
-          az webapp config container set --name "$FRONTEND_APP" --resource-group "$RESOURCE_GROUP" \
-            --container-image-name "$ACR_LOGIN_SERVER/$FRONTEND_IMAGE:$IMAGE_TAG"
-      - name: Restart web apps
-        run: |
-          az webapp restart --name "$BACKEND_APP" --resource-group "$RESOURCE_GROUP"
-          az webapp restart --name "$FRONTEND_APP" --resource-group "$RESOURCE_GROUP"
+      - name: Restart the API app
+        run: az webapp restart --name "$BACKEND_APP" --resource-group "$RESOURCE_GROUP"
       - name: Post-deploy smoke test
         run: |
           for _ in $(seq 1 40); do
@@ -101,10 +142,33 @@ jobs:
             sleep 6
           done
           curl -fsS "https://$BACKEND_APP.azurewebsites.net/api/tags" | grep -q tags
+
+  deploy-frontend:
+    needs: build-push-frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Point the web app at the new image
+        run: |
+          az webapp config container set --name "$FRONTEND_APP" --resource-group "$RESOURCE_GROUP" \
+            --container-image-name "$ACR_LOGIN_SERVER/$FRONTEND_IMAGE:$IMAGE_TAG"
+      - name: Restart the web app
+        run: az webapp restart --name "$FRONTEND_APP" --resource-group "$RESOURCE_GROUP"
+      - name: Post-deploy smoke test
+        run: |
+          for _ in $(seq 1 40); do
+            curl -fsS "https://$FRONTEND_APP.azurewebsites.net/healthz" >/dev/null && break
+            sleep 6
+          done
           curl -fsS "https://$FRONTEND_APP.azurewebsites.net/healthz" | grep -q ok
 
   performance:
-    needs: deploy
+    needs: [changes, deploy-backend]
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

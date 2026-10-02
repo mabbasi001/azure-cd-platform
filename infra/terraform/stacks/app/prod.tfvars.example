@@ -1,4 +1,13 @@
-subscription_id = "00000000-0000-0000-0000-000000000000"
-location        = "westus3"
-environment     = "prod"
-app_service_sku = "P1v3"
+# subscription_id comes from ARM_SUBSCRIPTION_ID (never committed).
+location    = "westus3"
+environment = "prod"
+region_code = "wus3"
+
+api_plan_sku = "P1v3"
+web_plan_sku = "P1v3"
+
+autoscale_min = 2
+autoscale_max = 5
+
+postgres_ha_enabled           = true
+postgres_geo_redundant_backup = true

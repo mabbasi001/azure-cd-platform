@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# Scale the App Service plan: out (instance count) and/or up (SKU tier).
+# Scale an App Service plan: out (instance count) and/or up (SKU tier). The api and
+# web tiers are separate plans, so pass --tier to pick one (default: both).
 #
 #   scale.sh --instances 3
-#   scale.sh --sku P1v3
+#   scale.sh --tier api --instances 3
+#   scale.sh --tier web --sku P1v3
 #   scale.sh --instances 3 --sku P1v3
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -12,6 +14,7 @@ require_az
 
 instances=""
 sku=""
+tier="both"
 while [ $# -gt 0 ]; do
   case "$1" in
     --instances)
@@ -20,6 +23,10 @@ while [ $# -gt 0 ]; do
       ;;
     --sku)
       sku="$2"
+      shift 2
+      ;;
+    --tier)
+      tier="$2"
       shift 2
       ;;
     *)
@@ -34,14 +41,25 @@ if [ -z "$instances" ] && [ -z "$sku" ]; then
   exit 1
 fi
 
-if [ -n "$sku" ]; then
-  echo "Scaling up ${APP_SERVICE_PLAN} to SKU ${sku}"
-  az appservice plan update --name "$APP_SERVICE_PLAN" --resource-group "$APP_RESOURCE_GROUP" --sku "$sku"
-fi
+case "$tier" in
+  api) plans="$API_SERVICE_PLAN" ;;
+  web) plans="$WEB_SERVICE_PLAN" ;;
+  both) plans="$API_SERVICE_PLAN $WEB_SERVICE_PLAN" ;;
+  *)
+    echo "Unknown --tier: $tier (expected api, web, or both)" >&2
+    exit 1
+    ;;
+esac
 
-if [ -n "$instances" ]; then
-  echo "Scaling out ${APP_SERVICE_PLAN} to ${instances} instance(s)"
-  az appservice plan update --name "$APP_SERVICE_PLAN" --resource-group "$APP_RESOURCE_GROUP" --number-of-workers "$instances"
-fi
+for plan in $plans; do
+  if [ -n "$sku" ]; then
+    echo "Scaling up ${plan} to SKU ${sku}"
+    az appservice plan update --name "$plan" --resource-group "$APP_RESOURCE_GROUP" --sku "$sku"
+  fi
+  if [ -n "$instances" ]; then
+    echo "Scaling out ${plan} to ${instances} instance(s)"
+    az appservice plan update --name "$plan" --resource-group "$APP_RESOURCE_GROUP" --number-of-workers "$instances"
+  fi
+done
 
 echo "Scale complete."

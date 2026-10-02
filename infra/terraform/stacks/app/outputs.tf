@@ -18,8 +18,21 @@ output "frontend_app_name" {
   value = module.frontend.name
 }
 
+output "backend_hostname" {
+  value = module.backend.default_hostname
+}
+
+output "frontend_hostname" {
+  value = module.frontend.default_hostname
+}
+
 output "postgres_fqdn" {
   value = module.postgres.fqdn
+}
+
+output "postgres_server_id" {
+  description = "Use as replica_source_server_id for a secondary-region replica."
+  value       = module.postgres.id
 }
 
 output "backup_storage_account" {
