@@ -1,0 +1,6 @@
+[runners]
+runner ansible_host=RUNNER_PUBLIC_IP
+
+[runners:vars]
+ansible_user=azureuser
+ansible_ssh_private_key_file=~/.ssh/id_ed25519

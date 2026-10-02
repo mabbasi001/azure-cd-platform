@@ -1,0 +1,6 @@
+- name: Provision the GitHub Actions self-hosted runner
+  hosts: runners
+  become: true
+  roles:
+    - common
+    - github_runner
