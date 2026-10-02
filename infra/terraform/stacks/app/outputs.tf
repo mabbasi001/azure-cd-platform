@@ -27,5 +27,5 @@ output "backup_storage_account" {
 }
 
 output "backup_container" {
-  value = azurerm_storage_container.backup.name
+  value = "pg-backups"
 }

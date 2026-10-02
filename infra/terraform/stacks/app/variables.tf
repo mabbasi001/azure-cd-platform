@@ -46,3 +46,9 @@ variable "app_service_sku" {
   type    = string
   default = "B1"
 }
+
+variable "admin_ip_rules" {
+  description = "Public IPs/CIDRs allowed through the backup storage firewall."
+  type        = list(string)
+  default     = []
+}

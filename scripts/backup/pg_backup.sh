@@ -22,6 +22,13 @@ echo "Dumping database"
 docker run --rm --network host -e PGURL="$database_url" "$PG_IMAGE" \
   sh -c 'pg_dump "$PGURL"' | gzip >"$tmp/$dump_file"
 
+echo "Ensuring container ${BACKUP_CONTAINER} exists"
+az storage container create \
+  --account-name "$BACKUP_STORAGE_ACCOUNT" \
+  --name "$BACKUP_CONTAINER" \
+  --auth-mode login \
+  --output none
+
 echo "Uploading ${dump_file}"
 az storage blob upload \
   --account-name "$BACKUP_STORAGE_ACCOUNT" \

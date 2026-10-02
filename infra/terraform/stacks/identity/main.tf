@@ -45,11 +45,11 @@ resource "azurerm_role_assignment" "ci_acr_push" {
   principal_id         = azuread_service_principal.ci.object_id
 }
 
-# Needed by the scheduled backup workflow: read the DB secret from Key Vault
-# and write dumps to the backup storage account.
-resource "azurerm_role_assignment" "ci_kv_secrets_user" {
+# The CI identity manages Key Vault secrets when applying the app stack and
+# reads the DB secret in the backup workflow, so it needs secret write access.
+resource "azurerm_role_assignment" "ci_kv_secrets_officer" {
   scope                = local.subscription_scope
-  role_definition_name = "Key Vault Secrets User"
+  role_definition_name = "Key Vault Secrets Officer"
   principal_id         = azuread_service_principal.ci.object_id
 }
 
