@@ -1,7 +1,7 @@
 # Terraform
 
 Infrastructure as code for the platform, split into reusable `modules/` and per-environment
-stacks under `envs/`.
+stacks under `stacks/`.
 
 ```
 modules/
@@ -12,7 +12,7 @@ modules/
   postgres/     VNet-integrated PostgreSQL flexible server + private DNS
   appinsights/  Application Insights (workspace-based)
   appservice/   Linux Web App for Containers (MI ACR pull, VNet integration)
-envs/
+stacks/
   identity/     GitHub OIDC app registration + federated creds + RBAC (bootstrap)
   shared/       cross-environment infra: RG, Log Analytics, ACR, Key Vault,
                 VNet, runner identity, RBAC
@@ -22,7 +22,7 @@ envs/
 
 `shared` and `identity` are distinct one-off stacks. The `app` stack is
 environment-agnostic: `dev`/`staging`/`prod` are **workspaces** with their own
-`*.tfvars`, not copied folders (see `envs/app/README.md`).
+`*.tfvars`, not copied folders (see `stacks/app/README.md`).
 
 Apply order: `identity` and `shared` first (any order), then `app`
 (reads `shared` remote state).
@@ -41,7 +41,7 @@ state account.
 
 ## Usage
 
-From an environment directory (e.g. `envs/shared`):
+From an environment directory (e.g. `stacks/shared`):
 
 ```
 export ARM_USE_AZUREAD=true
