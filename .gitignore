@@ -72,4 +72,4 @@ azureauth.json
 .azure/
 
 # Ansible runtime inventory (host IPs)
-infra/ansible/inventory.ini
+runner-infra/ansible/inventory.ini

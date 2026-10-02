@@ -1,0 +1,11 @@
+runner_user: actions-runner
+runner_dir: /opt/actions-runner
+runner_version: "2.321.0"
+runner_labels: "self-hosted,linux,x64,azure"
+runner_name: "{{ ansible_hostname }}"
+
+github_owner: mabbasi001
+github_repo: realworld-cd
+
+# github_pat must be provided at run time (not stored here), e.g.:
+#   ansible-playbook playbook.yml -e "github_pat=ghp_xxx"
