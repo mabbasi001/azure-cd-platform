@@ -1,0 +1,116 @@
+name: app
+
+on:
+  push:
+    branches: [develop, main]
+    paths:
+      - "apps/**"
+      - "tests/perf/**"
+      - ".github/workflows/app.yml"
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ACR_NAME: acrrwsharede8fneu
+  ACR_LOGIN_SERVER: acrrwsharede8fneu.azurecr.io
+  BACKEND_IMAGE: rw-backend
+  FRONTEND_IMAGE: rw-frontend
+  RESOURCE_GROUP: rg-rw-dev
+  BACKEND_APP: app-rw-dev-api-e8f-neu
+  FRONTEND_APP: app-rw-dev-web-e8f-neu
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  test:
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and start the stack
+        working-directory: apps
+        run: docker compose up -d --build
+      - name: Wait for the backend and exercise the API
+        run: |
+          for _ in $(seq 1 30); do
+            curl -fsS http://localhost:8000/docs >/dev/null && break
+            sleep 3
+          done
+          user="ci$(date +%s)"
+          curl -fsS -X POST http://localhost:8000/api/users \
+            -H 'Content-Type: application/json' \
+            -d "{\"user\":{\"username\":\"$user\",\"email\":\"$user@example.com\",\"password\":\"password123\"}}" \
+            | grep -q token
+          curl -fsS http://localhost:8000/api/tags | grep -q tags
+      - name: Check the frontend serves
+        run: curl -fsS http://localhost:4100/healthz | grep -q ok
+      - name: Tear down
+        if: always()
+        working-directory: apps
+        run: docker compose down -v
+
+  build-push:
+    needs: test
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Log in to ACR
+        run: az acr login --name "$ACR_NAME"
+      - name: Build and push backend
+        run: |
+          docker buildx build --platform linux/amd64 \
+            -t "$ACR_LOGIN_SERVER/$BACKEND_IMAGE:$IMAGE_TAG" \
+            -t "$ACR_LOGIN_SERVER/$BACKEND_IMAGE:latest" \
+            --push apps/backend
+      - name: Build and push frontend
+        run: |
+          docker buildx build --platform linux/amd64 \
+            -t "$ACR_LOGIN_SERVER/$FRONTEND_IMAGE:$IMAGE_TAG" \
+            -t "$ACR_LOGIN_SERVER/$FRONTEND_IMAGE:latest" \
+            --push apps/frontend
+
+  deploy:
+    needs: build-push
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Point web apps at the new image
+        run: |
+          az webapp config container set --name "$BACKEND_APP" --resource-group "$RESOURCE_GROUP" \
+            --container-image-name "$ACR_LOGIN_SERVER/$BACKEND_IMAGE:$IMAGE_TAG"
+          az webapp config container set --name "$FRONTEND_APP" --resource-group "$RESOURCE_GROUP" \
+            --container-image-name "$ACR_LOGIN_SERVER/$FRONTEND_IMAGE:$IMAGE_TAG"
+      - name: Restart web apps
+        run: |
+          az webapp restart --name "$BACKEND_APP" --resource-group "$RESOURCE_GROUP"
+          az webapp restart --name "$FRONTEND_APP" --resource-group "$RESOURCE_GROUP"
+      - name: Post-deploy smoke test
+        run: |
+          for _ in $(seq 1 40); do
+            curl -fsS "https://$BACKEND_APP.azurewebsites.net/docs" >/dev/null && break
+            sleep 6
+          done
+          curl -fsS "https://$BACKEND_APP.azurewebsites.net/api/tags" | grep -q tags
+          curl -fsS "https://$FRONTEND_APP.azurewebsites.net/healthz" | grep -q ok
+
+  performance:
+    needs: deploy
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run k6 performance gate
+        run: |
+          docker run --rm -i \
+            -e BASE_URL="https://$BACKEND_APP.azurewebsites.net" \
+            -v "$PWD/tests/perf:/perf" \
+            grafana/k6 run /perf/smoke.js
