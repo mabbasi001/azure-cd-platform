@@ -17,12 +17,19 @@ variable "application_display_name" {
   default = "github-actions-realworld-cd"
 }
 
+# GitHub issues OIDC tokens with "immutable" subjects for this repo (account and
+# repo database IDs embedded), so the federated subjects use that prefix.
+variable "oidc_subject_prefix" {
+  type    = string
+  default = "repo:mabbasi001@121091435/realworld-cd@1402088929"
+}
+
 variable "federated_subjects" {
-  description = "GitHub OIDC subjects granted access, keyed by a short name."
+  description = "GitHub OIDC subject suffixes granted access, keyed by a short name."
   type        = map(string)
   default = {
-    main         = "repo:mabbasi001/realworld-cd:ref:refs/heads/main"
-    develop      = "repo:mabbasi001/realworld-cd:ref:refs/heads/develop"
-    pull_request = "repo:mabbasi001/realworld-cd:pull_request"
+    main         = "ref:refs/heads/main"
+    develop      = "ref:refs/heads/develop"
+    pull_request = "pull_request"
   }
 }

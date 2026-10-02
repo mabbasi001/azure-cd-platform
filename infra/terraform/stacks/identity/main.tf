@@ -18,7 +18,7 @@ resource "azuread_application_federated_identity_credential" "github" {
   description    = "GitHub Actions OIDC (${each.key})"
   audiences      = ["api://AzureADTokenExchange"]
   issuer         = "https://token.actions.githubusercontent.com"
-  subject        = each.value
+  subject        = "${var.oidc_subject_prefix}:${each.value}"
 }
 
 # The CI identity runs Terraform (create infra), creates role assignments
