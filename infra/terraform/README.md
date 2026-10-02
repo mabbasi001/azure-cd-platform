@@ -9,10 +9,20 @@ modules/
   network/      VNet + subnets (optional delegation / service endpoints)
   acr/          Azure Container Registry + diagnostics
   keyvault/     Key Vault (RBAC auth) + diagnostics
+  postgres/     VNet-integrated PostgreSQL flexible server + private DNS
+  appinsights/  Application Insights (workspace-based)
+  appservice/   Linux Web App for Containers (MI ACR pull, VNet integration)
+  runner/       self-hosted CI runner VM (NIC/NSG/public IP)
 envs/
+  identity/     GitHub OIDC app registration + federated creds + RBAC (bootstrap)
   shared/       cross-environment infra: RG, Log Analytics, ACR, Key Vault,
                 VNet, runner identity, RBAC
+  dev/          application tier: Postgres, App Insights, web apps, KV secrets
+  runner/       the CI runner VM (consumes shared outputs)
 ```
+
+Apply order: `identity` and `shared` first (any order), then `dev` and `runner`
+(both read `shared` remote state).
 
 ## State
 
