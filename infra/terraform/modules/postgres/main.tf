@@ -35,6 +35,12 @@ resource "azurerm_postgresql_flexible_server" "this" {
   tags = var.tags
 
   depends_on = [azurerm_private_dns_zone_virtual_network_link.this]
+
+  # Azure assigns an availability zone at creation; don't let a re-apply try to
+  # change it (flexible server only allows zone changes paired with HA).
+  lifecycle {
+    ignore_changes = [zone]
+  }
 }
 
 resource "azurerm_postgresql_flexible_server_database" "this" {
