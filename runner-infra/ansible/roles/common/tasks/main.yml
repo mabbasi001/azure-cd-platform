@@ -5,6 +5,7 @@
       - curl
       - jq
       - gnupg
+      - acl
       - unattended-upgrades
     state: present
     update_cache: true

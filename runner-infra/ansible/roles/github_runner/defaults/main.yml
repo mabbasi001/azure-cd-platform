@@ -1,6 +1,6 @@
 runner_user: actions-runner
 runner_dir: /opt/actions-runner
-runner_version: "2.321.0"
+runner_version: "2.337.0"
 runner_labels: "self-hosted,linux,x64,azure"
 runner_name: "{{ ansible_hostname }}"
 
