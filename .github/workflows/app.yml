@@ -108,6 +108,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Warm up the app (avoid measuring container cold start)
+        run: |
+          for _ in $(seq 1 20); do
+            curl -fsS "https://$BACKEND_APP.azurewebsites.net/api/tags" >/dev/null || true
+            sleep 1
+          done
       - name: Run k6 performance gate
         run: |
           docker run --rm -i \
