@@ -53,6 +53,17 @@ variable "backup_retention_days" {
   default = 7
 }
 
+variable "high_availability_enabled" {
+  description = "Zone-redundant HA with a hot standby + automatic failover. Requires a GP/MO SKU (not Burstable)."
+  type        = bool
+  default     = false
+}
+
+variable "high_availability_mode" {
+  type    = string
+  default = "ZoneRedundant"
+}
+
 variable "log_analytics_workspace_id" {
   type    = string
   default = null

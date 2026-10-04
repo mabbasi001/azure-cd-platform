@@ -43,8 +43,35 @@ variable "frontend_image_tag" {
 }
 
 variable "app_service_sku" {
-  type    = string
-  default = "B1"
+  description = "App Service plan SKU. Autoscale needs Standard (S1) or higher."
+  type        = string
+  default     = "S1"
+}
+
+variable "postgres_sku" {
+  description = "PostgreSQL SKU. HA needs a GP/MO SKU, e.g. GP_Standard_D2s_v3; without HA, B_Standard_B1ms is fine."
+  type        = string
+  default     = "GP_Standard_D2s_v3"
+}
+
+variable "postgres_ha_enabled" {
+  type    = bool
+  default = true
+}
+
+variable "enable_autoscale" {
+  type    = bool
+  default = true
+}
+
+variable "autoscale_min" {
+  type    = number
+  default = 1
+}
+
+variable "autoscale_max" {
+  type    = number
+  default = 3
 }
 
 variable "admin_ip_rules" {

@@ -55,6 +55,8 @@ module "postgres" {
   resource_group_name        = azurerm_resource_group.dev.name
   administrator_login        = var.postgres_admin_login
   administrator_password     = random_password.postgres.result
+  sku_name                   = var.postgres_sku
+  high_availability_enabled  = var.postgres_ha_enabled
   delegated_subnet_id        = local.shared.subnet_ids["snet-rw-shared-db"]
   vnet_id                    = local.shared.vnet_id
   log_analytics_workspace_id = local.shared.log_analytics_workspace_id
@@ -82,6 +84,63 @@ resource "azurerm_service_plan" "dev" {
   os_type             = "Linux"
   sku_name            = var.app_service_sku
   tags                = local.tags
+}
+
+resource "azurerm_monitor_autoscale_setting" "plan" {
+  count               = var.enable_autoscale ? 1 : 0
+  name                = "autoscale-${local.prefix}"
+  location            = var.location
+  resource_group_name = azurerm_resource_group.dev.name
+  target_resource_id  = azurerm_service_plan.dev.id
+  tags                = local.tags
+
+  profile {
+    name = "cpu-based"
+
+    capacity {
+      minimum = var.autoscale_min
+      maximum = var.autoscale_max
+      default = var.autoscale_min
+    }
+
+    rule {
+      metric_trigger {
+        metric_name        = "CpuPercentage"
+        metric_resource_id = azurerm_service_plan.dev.id
+        time_grain         = "PT1M"
+        statistic          = "Average"
+        time_window        = "PT5M"
+        time_aggregation   = "Average"
+        operator           = "GreaterThan"
+        threshold          = 70
+      }
+      scale_action {
+        direction = "Increase"
+        type      = "ChangeCount"
+        value     = "1"
+        cooldown  = "PT5M"
+      }
+    }
+
+    rule {
+      metric_trigger {
+        metric_name        = "CpuPercentage"
+        metric_resource_id = azurerm_service_plan.dev.id
+        time_grain         = "PT1M"
+        statistic          = "Average"
+        time_window        = "PT5M"
+        time_aggregation   = "Average"
+        operator           = "LessThan"
+        threshold          = 30
+      }
+      scale_action {
+        direction = "Decrease"
+        type      = "ChangeCount"
+        value     = "1"
+        cooldown  = "PT5M"
+      }
+    }
+  }
 }
 
 module "backend" {

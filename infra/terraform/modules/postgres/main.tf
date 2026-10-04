@@ -32,6 +32,13 @@ resource "azurerm_postgresql_flexible_server" "this" {
   backup_retention_days        = var.backup_retention_days
   geo_redundant_backup_enabled = false
 
+  dynamic "high_availability" {
+    for_each = var.high_availability_enabled ? [1] : []
+    content {
+      mode = var.high_availability_mode
+    }
+  }
+
   tags = var.tags
 
   depends_on = [azurerm_private_dns_zone_virtual_network_link.this]

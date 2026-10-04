@@ -33,3 +33,20 @@ variable "admin_ip_rules" {
   type        = list(string)
   default     = []
 }
+
+variable "budget_amount" {
+  description = "Monthly subscription budget in the billing currency."
+  type        = number
+  default     = 150
+}
+
+variable "budget_contact_emails" {
+  type    = list(string)
+  default = ["mabbasi_@outlook.com"]
+}
+
+variable "budget_start_date" {
+  description = "Budget start — must be the first of a month (RFC3339)."
+  type        = string
+  default     = "2026-10-01T00:00:00Z"
+}
