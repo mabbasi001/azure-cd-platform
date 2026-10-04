@@ -15,8 +15,8 @@ permissions:
   contents: read
 
 env:
-  KEY_VAULT_NAME: kv-rw-shared-e8f-neu
-  BACKUP_STORAGE_ACCOUNT: strwdevbake8fneu
+  KEY_VAULT_NAME: kv-rw-shared-e8f-cus
+  BACKUP_STORAGE_ACCOUNT: strwdevbake8fcus
   BACKUP_CONTAINER: pg-backups
 
 jobs:

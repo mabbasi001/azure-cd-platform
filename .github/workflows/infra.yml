@@ -30,7 +30,7 @@ env:
   ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
   ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
   ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-  KEY_VAULT_NAME: kv-rw-shared-e8f-neu
+  KEY_VAULT_NAME: kv-rw-shared-e8f-cus
 
 jobs:
   validate:

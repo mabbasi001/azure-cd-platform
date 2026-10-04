@@ -4,7 +4,7 @@ variable "subscription_id" {
 
 variable "location" {
   type    = string
-  default = "northeurope"
+  default = "centralus"
 }
 
 variable "product" {
@@ -25,7 +25,7 @@ variable "tenant_code" {
 
 variable "region_code" {
   type    = string
-  default = "neu"
+  default = "cus"
 }
 
 variable "admin_ip_rules" {

@@ -4,10 +4,10 @@ set -euo pipefail
 
 APP_RESOURCE_GROUP="${APP_RESOURCE_GROUP:-rg-rw-dev}"
 SHARED_RESOURCE_GROUP="${SHARED_RESOURCE_GROUP:-rg-rw-shared}"
-BACKEND_APP="${BACKEND_APP:-app-rw-dev-api-e8f-neu}"
-FRONTEND_APP="${FRONTEND_APP:-app-rw-dev-web-e8f-neu}"
+BACKEND_APP="${BACKEND_APP:-app-rw-dev-api-e8f-cus}"
+FRONTEND_APP="${FRONTEND_APP:-app-rw-dev-web-e8f-cus}"
 APP_SERVICE_PLAN="${APP_SERVICE_PLAN:-plan-rw-dev}"
-POSTGRES_SERVER="${POSTGRES_SERVER:-psql-rw-dev-e8f-neu}"
+POSTGRES_SERVER="${POSTGRES_SERVER:-psql-rw-dev-e8f-cus}"
 RUNNER_VM="${RUNNER_VM:-vm-rw-shared-runner}"
 
 require_az() {

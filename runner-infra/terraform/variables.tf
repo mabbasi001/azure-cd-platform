@@ -4,15 +4,15 @@ variable "subscription_id" {
 
 variable "location" {
   type    = string
-  default = "northeurope"
+  default = "centralus"
 }
 
-# BASv2 (B2als_v2) is the family with available capacity in North Europe for
-# this subscription; it needs a one-time "Standard BASv2 Family vCPUs" quota
-# grant. Older BS/D families have quota but no capacity in-region.
+# Dsv6 (D2s_v6) has both quota and available capacity in Central US for this
+# subscription (verified by test-create). North Europe had no VM capacity for
+# any family with quota, which is why the whole platform lives in Central US.
 variable "vm_size" {
   type    = string
-  default = "Standard_B2als_v2"
+  default = "Standard_D2s_v6"
 }
 
 variable "ssh_public_key" {

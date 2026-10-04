@@ -34,7 +34,7 @@ rather than part of the application delivery.
 ## State
 
 Remote state lives in the bootstrap storage account (created manually, see
-`docs/conventions/naming.md`): `rg-rw-shared-tfstate` / `strwsharedtfstatee8fneu`, container
+`docs/conventions/naming.md`): `rg-rw-shared-tfstate` / `strwsharedtfstatee8fcus`, container
 `tfstate`, one key per environment (`shared.tfstate`, ...). The backend uses Azure AD auth, so
 no storage keys are needed — the caller must hold **Storage Blob Data Contributor** on the
 state account.
