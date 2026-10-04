@@ -90,7 +90,7 @@ jobs:
         working-directory: infra/terraform/stacks/shared
         run: |
           terraform init
-          terraform apply -input=false -auto-approve
+          bash ../../../../scripts/ci/tf_apply.sh
 
       - name: Allow runner IP on Key Vault
         if: github.event_name == 'push' || inputs.stack == 'app'
@@ -106,7 +106,7 @@ jobs:
         run: |
           terraform init
           terraform workspace select dev || terraform workspace new dev
-          terraform apply -input=false -auto-approve -var-file=dev.tfvars
+          bash ../../../../scripts/ci/tf_apply.sh -var-file=dev.tfvars
 
       - name: Remove runner IP from Key Vault
         if: always() && env.RUNNER_IP != ''
