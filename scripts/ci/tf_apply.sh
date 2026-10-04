@@ -9,7 +9,7 @@ max=6
 i=0
 while :; do
   i=$((i + 1))
-  out="$(terraform apply -input=false -auto-approve "$@" 2>&1)"
+  out="$(terraform apply -input=false -auto-approve -no-color "$@" 2>&1)"
   rc=$?
   printf '%s\n' "$out"
   [ "$rc" -eq 0 ] && exit 0
