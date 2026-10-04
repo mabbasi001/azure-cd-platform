@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException
@@ -15,7 +17,18 @@ def get_application() -> FastAPI:
 
     settings.configure_logging()
 
+    telemetry_enabled = bool(os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"))
+    if telemetry_enabled:
+        from azure.monitor.opentelemetry import configure_azure_monitor
+
+        configure_azure_monitor()
+
     application = FastAPI(**settings.fastapi_kwargs)
+
+    if telemetry_enabled:
+        from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+
+        FastAPIInstrumentor.instrument_app(application)
 
     application.add_middleware(
         CORSMiddleware,
