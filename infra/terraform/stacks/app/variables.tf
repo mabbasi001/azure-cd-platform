@@ -4,7 +4,7 @@ variable "subscription_id" {
 
 variable "location" {
   type    = string
-  default = "centralus"
+  default = "westus3"
 }
 
 variable "product" {
@@ -24,7 +24,7 @@ variable "tenant_code" {
 
 variable "region_code" {
   type    = string
-  default = "cus"
+  default = "wus3"
 }
 
 variable "postgres_admin_login" {

@@ -20,8 +20,8 @@ flowchart TB
   ghaApp -. runs on .-> vm
 
   subgraph Shared[Shared infra - rg-rw-shared]
-    acr[(ACR<br/>acrrwsharede8fcus)]
-    kv[Key Vault<br/>kv-rw-shared-e8f-cus]
+    acr[(ACR<br/>acrrwsharede8fwus3)]
+    kv[Key Vault<br/>kv-rw-shared-e8f-wus3]
     law[Log Analytics<br/>log-rw-shared]
   end
 

@@ -4,12 +4,12 @@ variable "subscription_id" {
 
 variable "location" {
   type    = string
-  default = "centralus"
+  default = "westus3"
 }
 
-# Dsv6 (D2s_v6) has both quota and available capacity in Central US for this
+# Dsv6 (D2s_v6) has both quota and available capacity in West US 3 for this
 # subscription (verified by test-create). North Europe had no VM capacity for
-# any family with quota, which is why the whole platform lives in Central US.
+# any family with quota, which is why the whole platform lives in West US 3.
 variable "vm_size" {
   type    = string
   default = "Standard_D2s_v6"

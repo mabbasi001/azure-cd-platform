@@ -14,13 +14,13 @@ permissions:
   contents: read
 
 env:
-  ACR_NAME: acrrwsharede8fcus
-  ACR_LOGIN_SERVER: acrrwsharede8fcus.azurecr.io
+  ACR_NAME: acrrwsharede8fwus3
+  ACR_LOGIN_SERVER: acrrwsharede8fwus3.azurecr.io
   BACKEND_IMAGE: rw-backend
   FRONTEND_IMAGE: rw-frontend
   RESOURCE_GROUP: rg-rw-dev
-  BACKEND_APP: app-rw-dev-api-e8f-cus
-  FRONTEND_APP: app-rw-dev-web-e8f-cus
+  BACKEND_APP: app-rw-dev-api-e8f-wus3
+  FRONTEND_APP: app-rw-dev-web-e8f-wus3
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:

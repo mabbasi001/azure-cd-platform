@@ -25,19 +25,19 @@ registries) append a tenant code and region and drop the separators:
 | product | `rw` | RealWorld CD platform |
 | env | `shared`, `dev`, `prod` | `shared` = cross-environment infra (state, ACR, runner) |
 | tenant | `e8f` | uniqueness code for globally-unique names, derived deterministically from the Azure tenant GUID: `sha256(tenantId)[0:3]` |
-| region | `cus` | Central US — the region with both App Service quota and VM capacity for this subscription (North Europe had no VM capacity for any quota-backed family). |
+| region | `wus3` | West US 3 — the region with both App Service quota and VM capacity for this subscription (North Europe had no VM capacity for any quota-backed family). |
 
 ## Type prefixes
 
 | Resource | Prefix | Example |
 |----------|--------|---------|
 | Resource group | `rg-` | `rg-rw-dev` |
-| Storage account | `st` | `strwdevbake8fcus` |
-| Container registry | `acr` | `acrrwsharede8fcus` |
-| Key Vault | `kv-` | `kv-rw-dev-e8f-cus` |
-| PostgreSQL server | `psql-` | `psql-rw-dev-e8f-cus` |
+| Storage account | `st` | `strwdevbake8fwus3` |
+| Container registry | `acr` | `acrrwsharede8fwus3` |
+| Key Vault | `kv-` | `kv-rw-dev-e8f-wus3` |
+| PostgreSQL server | `psql-` | `psql-rw-dev-e8f-wus3` |
 | App Service plan | `plan-` | `plan-rw-dev` |
-| Web App | `app-` | `app-rw-dev-api-e8f-cus`, `app-rw-dev-web-e8f-cus` |
+| Web App | `app-` | `app-rw-dev-api-e8f-wus3`, `app-rw-dev-web-e8f-wus3` |
 | Log Analytics workspace | `log-` | `log-rw-shared` |
 | Application Insights | `appi-` | `appi-rw-dev` |
 | Virtual network | `vnet-` | `vnet-rw-dev` |
@@ -58,5 +58,5 @@ Every resource carries: `product=rw`, `env=<env>`, `managedBy=terraform` (or
 | Resource | Name |
 |----------|------|
 | State resource group | `rg-rw-shared-tfstate` |
-| State storage account | `strwsharedtfstatee8fcus` |
+| State storage account | `strwsharedtfstatee8fwus3` |
 | State container | `tfstate` |
