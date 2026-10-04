@@ -7,9 +7,12 @@ variable "location" {
   default = "northeurope"
 }
 
+# BASv2 (B2als_v2) is the family with available capacity in North Europe for
+# this subscription; it needs a one-time "Standard BASv2 Family vCPUs" quota
+# grant. Older BS/D families have quota but no capacity in-region.
 variable "vm_size" {
   type    = string
-  default = "Standard_B2s"
+  default = "Standard_B2als_v2"
 }
 
 variable "ssh_public_key" {
