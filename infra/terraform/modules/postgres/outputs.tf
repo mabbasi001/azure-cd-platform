@@ -11,5 +11,5 @@ output "server_name" {
 }
 
 output "database_name" {
-  value = azurerm_postgresql_flexible_server_database.this.name
+  value = one(azurerm_postgresql_flexible_server_database.this[*].name)
 }

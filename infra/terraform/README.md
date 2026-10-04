@@ -5,19 +5,25 @@ stacks under `stacks/`.
 
 ```
 modules/
-  monitoring/   Log Analytics workspace
-  network/      VNet + subnets (optional delegation / service endpoints)
-  acr/          Azure Container Registry + diagnostics
-  keyvault/     Key Vault (RBAC auth) + diagnostics
-  postgres/     VNet-integrated PostgreSQL flexible server + private DNS
-  appinsights/  Application Insights (workspace-based)
-  appservice/   Linux Web App for Containers (MI ACR pull, VNet integration)
+  monitoring/      Log Analytics workspace
+  network/         VNet + subnets (optional delegation / service endpoints)
+  acr/             Azure Container Registry (+ optional geo-replication) + diagnostics
+  keyvault/        Key Vault (RBAC auth) + diagnostics
+  postgres/        VNet-integrated PostgreSQL flexible server + private DNS;
+                   geo-redundant backup + cross-region read-replica mode
+  appinsights/     Application Insights (workspace-based)
+  appservice/      Linux Web App for Containers (MI ACR pull, VNet integration)
+  autoscale/       App Service plan autoscale (CPU + optional HTTP queue length)
+  frontdoor/       Azure Front Door (global LB + WAF + TLS + health failover)
+  private_endpoint/ generic private endpoint + private DNS zone + link
 stacks/
   identity/     GitHub OIDC app registration + federated creds + RBAC (bootstrap)
   shared/       cross-environment infra: RG, Log Analytics, ACR, Key Vault,
                 VNet, runner identity, RBAC
-  app/          application tier (Postgres, App Insights, web apps, KV secrets);
-                one stack, per-environment via Terraform workspaces + *.tfvars
+  app/          application tier (Postgres, App Insights, per-app plans + autoscale,
+                web apps, KV secrets); one stack, per-environment and per-region
+                via Terraform workspaces + *.tfvars
+  frontdoor/    global entry point; origins point at each region's app tier
 ```
 
 `shared` and `identity` are distinct one-off stacks. The `app` stack is
