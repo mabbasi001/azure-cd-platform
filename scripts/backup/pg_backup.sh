@@ -20,7 +20,7 @@ database_url="$(az keyvault secret show --vault-name "$KEY_VAULT_NAME" --name "$
 
 echo "Dumping database"
 docker run --rm --network host -e PGURL="$database_url" "$PG_IMAGE" \
-  sh -c 'pg_dump "$PGURL"' | gzip >"$tmp/$dump_file"
+  sh -c 'pg_dump --no-owner --no-acl "$PGURL"' | gzip >"$tmp/$dump_file"
 
 echo "Ensuring container ${BACKUP_CONTAINER} exists"
 az storage container create \
