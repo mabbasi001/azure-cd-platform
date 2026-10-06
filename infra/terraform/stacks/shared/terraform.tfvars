@@ -1,2 +1,2 @@
-subscription_id = "00000000-0000-0000-0000-000000000000"
-location        = "westus3"
+# subscription_id comes from ARM_SUBSCRIPTION_ID (never committed).
+location = "westus3"
