@@ -13,14 +13,21 @@ resource "azurerm_private_dns_zone_virtual_network_link" "this" {
   tags                  = var.tags
 }
 
+locals {
+  is_replica = var.create_mode == "Replica"
+}
+
 resource "azurerm_postgresql_flexible_server" "this" {
   name                = var.name
   location            = var.location
   resource_group_name = var.resource_group_name
   version             = var.postgres_version
 
-  administrator_login    = var.administrator_login
-  administrator_password = var.administrator_password
+  # A read replica inherits credentials from its source; setting them is rejected.
+  create_mode            = var.create_mode
+  source_server_id       = var.source_server_id
+  administrator_login    = local.is_replica ? null : var.administrator_login
+  administrator_password = local.is_replica ? null : var.administrator_password
 
   sku_name   = var.sku_name
   storage_mb = var.storage_mb
@@ -30,7 +37,7 @@ resource "azurerm_postgresql_flexible_server" "this" {
   public_network_access_enabled = false
 
   backup_retention_days        = var.backup_retention_days
-  geo_redundant_backup_enabled = false
+  geo_redundant_backup_enabled = local.is_replica ? false : var.geo_redundant_backup_enabled
 
   dynamic "high_availability" {
     for_each = var.high_availability_enabled ? [1] : []
@@ -51,6 +58,8 @@ resource "azurerm_postgresql_flexible_server" "this" {
 }
 
 resource "azurerm_postgresql_flexible_server_database" "this" {
+  count = local.is_replica ? 0 : 1
+
   name      = var.database_name
   server_id = azurerm_postgresql_flexible_server.this.id
   charset   = "UTF8"

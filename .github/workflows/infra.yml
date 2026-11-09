@@ -14,7 +14,7 @@ on:
       stack:
         description: Stack to apply
         type: choice
-        options: [shared, app]
+        options: [shared, app, frontdoor]
         default: shared
 
 permissions:
@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        stack: [shared, identity, app]
+        stack: [shared, identity, app, frontdoor]
     defaults:
       run:
         working-directory: infra/terraform/stacks/${{ matrix.stack }}
@@ -111,3 +111,19 @@ jobs:
       - name: Remove runner IP from Key Vault
         if: always() && env.RUNNER_IP != ''
         run: az keyvault network-rule remove --name "$KEY_VAULT_NAME" --ip-address "$RUNNER_IP" --output none
+
+      # Global entry point: origins are read from the app stack's outputs so the
+      # two stacks stay in sync without copying hostnames by hand.
+      - name: Apply frontdoor
+        if: github.event_name == 'workflow_dispatch' && inputs.stack == 'frontdoor'
+        run: |
+          cd infra/terraform/stacks/app
+          terraform init
+          terraform workspace select dev
+          BE="$(terraform output -raw backend_hostname)"
+          FE="$(terraform output -raw frontend_hostname)"
+          cd ../frontdoor
+          terraform init
+          bash ../../../../scripts/ci/tf_apply.sh \
+            -var="backend_origin_hostnames=[\"$BE\"]" \
+            -var="frontend_origin_hostnames=[\"$FE\"]"

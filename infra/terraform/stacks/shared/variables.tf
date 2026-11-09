@@ -1,5 +1,7 @@
 variable "subscription_id" {
-  type = string
+  description = "Azure subscription. Leave unset to source from ARM_SUBSCRIPTION_ID; never commit a real id."
+  type        = string
+  default     = null
 }
 
 variable "location" {
@@ -26,6 +28,24 @@ variable "tenant_code" {
 variable "region_code" {
   type    = string
   default = "wus3"
+}
+
+variable "address_space" {
+  description = "VNet CIDR. Use a non-overlapping range per region so VNets can be peered for DR."
+  type        = string
+  default     = "10.10.0.0/16"
+}
+
+variable "acr_sku" {
+  description = "Container registry SKU. Geo-replication requires Premium."
+  type        = string
+  default     = "Basic"
+}
+
+variable "acr_georeplication_locations" {
+  description = "Regions to geo-replicate the registry to (Premium only)."
+  type        = list(string)
+  default     = []
 }
 
 variable "admin_ip_rules" {

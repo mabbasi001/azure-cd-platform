@@ -8,7 +8,7 @@ via environment variables (see `common.sh`).
 |--------|---------|
 | `start.sh` | Start PostgreSQL and both web apps. `INCLUDE_RUNNER=true` also starts the runner VM. |
 | `stop.sh` | Stop the web apps and PostgreSQL (and deallocate the runner VM with `INCLUDE_RUNNER=true`) to save cost. |
-| `scale.sh` | Scale the App Service plan: `--instances N` (scale out) and/or `--sku P1v3` (scale up). |
+| `scale.sh` | Scale a plan: `--instances N` (out) and/or `--sku P1v3` (up). `--tier api\|web\|both` picks the plan (default both). |
 
 Examples:
 
@@ -16,4 +16,5 @@ Examples:
 ./start.sh
 INCLUDE_RUNNER=true ./stop.sh
 ./scale.sh --instances 3 --sku P1v3
+./scale.sh --tier api --instances 4
 ```

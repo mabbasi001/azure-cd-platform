@@ -15,6 +15,12 @@ variable "sku" {
   default = "Basic"
 }
 
+variable "georeplication_locations" {
+  description = "Regions to geo-replicate the registry to. Requires the Premium SKU. Empty = single region."
+  type        = list(string)
+  default     = []
+}
+
 variable "log_analytics_workspace_id" {
   type    = string
   default = null

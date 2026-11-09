@@ -5,6 +5,15 @@ resource "azurerm_container_registry" "this" {
   sku                 = var.sku
   admin_enabled       = false
   tags                = var.tags
+
+  # Geo-replication needs Premium; each region pulls images from a local replica.
+  dynamic "georeplications" {
+    for_each = toset(var.georeplication_locations)
+    content {
+      location = georeplications.value
+      tags     = var.tags
+    }
+  }
 }
 
 resource "azurerm_monitor_diagnostic_setting" "this" {

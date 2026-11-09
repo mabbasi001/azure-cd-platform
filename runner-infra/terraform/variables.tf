@@ -1,5 +1,7 @@
 variable "subscription_id" {
-  type = string
+  description = "Azure subscription. Leave unset to source from ARM_SUBSCRIPTION_ID; never commit a real id."
+  type        = string
+  default     = null
 }
 
 variable "location" {

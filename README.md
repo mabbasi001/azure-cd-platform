@@ -7,6 +7,8 @@ Infrastructure is provisioned as code with Terraform, the self-hosted CI runner 
 with Ansible, and build/test/deploy run through GitHub Actions authenticating to Azure via OIDC
 (no stored cloud credentials).
 
+**Author:** M Abbasi · mabbasi_@outlook.com
+
 ## Architecture
 
 | Tier | Technology |

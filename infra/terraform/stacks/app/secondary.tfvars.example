@@ -1,0 +1,29 @@
+# Secondary-region (DR) app tier. Deploy in its own workspace, e.g.:
+#   terraform workspace new prod-r2
+#   terraform apply -var-file=secondary.tfvars
+#
+# Prerequisites in the secondary region:
+#   - a shared stack deployed there (its own VNet / Key Vault), with its state key
+#     passed via shared_state_key below;
+#   - the primary ACR geo-replicated to this region (acr_georeplication_locations
+#     in the shared stack).
+#
+# subscription_id comes from ARM_SUBSCRIPTION_ID (never committed).
+location    = "eastus2"
+environment = "prod"
+region_code = "eus2"
+
+shared_state_key = "shared-r2.tfstate"
+
+api_plan_sku = "P1v3"
+web_plan_sku = "P1v3"
+
+autoscale_min = 2
+autoscale_max = 5
+
+# Warm standby: a cross-region read replica of the primary server, promoted on
+# failover. HA is forced off on a replica. Supply the primary's server id and
+# admin password (from the primary Key Vault) so the connection string resolves.
+database_role            = "replica"
+replica_source_server_id = "<primary postgres_server_id output>"
+replica_admin_password   = "<primary admin password>"

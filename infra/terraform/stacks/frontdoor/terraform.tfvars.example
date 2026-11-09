@@ -1,0 +1,19 @@
+# Global entry point. Fill the origin lists from each region's app-stack outputs,
+# PRIMARY REGION FIRST (priority order drives health-based failover):
+#   terraform -chdir=../app output -raw backend_hostname
+#   terraform -chdir=../app output -raw frontend_hostname
+#
+# subscription_id comes from ARM_SUBSCRIPTION_ID (never committed).
+
+backend_origin_hostnames = [
+  "app-rw-prod-api-e8f-wus3.azurewebsites.net",
+  # "app-rw-prod-api-e8f-eus2.azurewebsites.net",  # secondary region
+]
+
+frontend_origin_hostnames = [
+  "app-rw-prod-web-e8f-wus3.azurewebsites.net",
+  # "app-rw-prod-web-e8f-eus2.azurewebsites.net",  # secondary region
+]
+
+# Premium unlocks the OWASP managed rule set; Standard keeps custom rules only.
+# frontdoor_sku = "Premium_AzureFrontDoor"

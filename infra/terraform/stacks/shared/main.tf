@@ -31,15 +31,15 @@ module "network" {
   name                = "vnet-${local.prefix}"
   location            = var.location
   resource_group_name = azurerm_resource_group.shared.name
-  address_space       = ["10.10.0.0/16"]
+  address_space       = [var.address_space]
   tags                = local.tags
 
   subnets = {
     "snet-${local.prefix}-runner" = {
-      address_prefixes = ["10.10.1.0/24"]
+      address_prefixes = [cidrsubnet(var.address_space, 8, 1)]
     }
     "snet-${local.prefix}-apps" = {
-      address_prefixes = ["10.10.2.0/24"]
+      address_prefixes = [cidrsubnet(var.address_space, 8, 2)]
       delegation = {
         name    = "webapp"
         service = "Microsoft.Web/serverFarms"
@@ -47,7 +47,7 @@ module "network" {
       }
     }
     "snet-${local.prefix}-db" = {
-      address_prefixes = ["10.10.3.0/24"]
+      address_prefixes = [cidrsubnet(var.address_space, 8, 3)]
       delegation = {
         name    = "postgres"
         service = "Microsoft.DBforPostgreSQL/flexibleServers"
@@ -55,7 +55,7 @@ module "network" {
       }
     }
     "snet-${local.prefix}-pe" = {
-      address_prefixes = ["10.10.4.0/24"]
+      address_prefixes = [cidrsubnet(var.address_space, 8, 4)]
     }
   }
 }
@@ -65,7 +65,8 @@ module "acr" {
   name                       = "acr${local.gprefix}${local.suffix}"
   location                   = var.location
   resource_group_name        = azurerm_resource_group.shared.name
-  sku                        = "Basic"
+  sku                        = var.acr_sku
+  georeplication_locations   = var.acr_georeplication_locations
   log_analytics_workspace_id = module.monitoring.id
   tags                       = local.tags
 }
